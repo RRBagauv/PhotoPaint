@@ -1,19 +1,25 @@
 package com.example.photopaint.paintPhoto
 
+import android.R.attr.bitmap
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.SparseIntArray
-import android.view.Surface
-import android.view.View
+import android.os.Environment
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.drawToBitmap
+import com.example.photopaint.MainActivity
 import com.example.photopaint.Paint
 import com.example.photopaint.R
-import com.example.photopaint.rotate
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 class paintActivity : AppCompatActivity() {
 
@@ -39,6 +45,31 @@ class paintActivity : AppCompatActivity() {
         btnSave.setOnClickListener{
 
             val bit = paintPanel.drawToBitmap(Bitmap.Config.ARGB_8888)
+            val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy-hh-mm-ss", Locale.getDefault())
+            val name =  "/" + simpleDateFormat.format(Calendar.getInstance().time) + "bit.jpg"
+            val file = File(
+                this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString(),
+                name
+            )
+
+            try {
+                var fos: FileOutputStream? = null
+                try {
+                    fos = FileOutputStream(file)
+                    bit.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                    Toast.makeText(this,"Файл сохранён", Toast.LENGTH_LONG).show()
+                    Intent(this.baseContext, MainActivity::class.java).let {
+                        it.putExtra("filename", file.absolutePath)
+                        this.startActivity(it)
+                    }
+                } finally {
+                    if(fos != null){
+                        fos.close()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
         }
 
